@@ -2,7 +2,7 @@ from flask import Flask, render_template
 from flask_sse import sse
 
 app = Flask(__name__)
-app.config["REDIS_URL"] = "redis://localhost"
+app.config["REDIS_URL"] = "redis://some-redis"
 app.register_blueprint(sse, url_prefix='/stream')
 
 @app.route('/')
