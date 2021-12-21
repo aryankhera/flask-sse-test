@@ -3,15 +3,36 @@
 
 <head>
     <title>Flask-SSE Quickstart</title>
+
 </head>
 
 <body>
     <h1>Flask-SSE Quickstart</h1>
+    <input type="text" name="srname" id="sr" value="" />
+    <button onclick="startSSE()">start SSE</button>
+    <ul id="Nodes">
+    </ul>
     <script>
-        var source = new EventSource("{{ url_for('sse.stream') }}");
+        let source = new EventSource("{{ url_for('sse.stream') }}");
+        let list = document.getElementById("Nodes");
+        const startSSE = () => {
+            source.close();
+            let srinput = document.getElementById("sr")
+            start_subreddit = sr.value
+            if (!start_subreddit)
+                alert('Empty Input')
+            else {
+                list.innerHTML = ""
+                fetch(`http://127.0.0.1:8000/hello/${start_subreddit}`).then(() => console.log('SSE Started'))
+            }
+        }
         source.addEventListener('greeting', function (event) {
             var data = JSON.parse(event.data);
-            alert("The server says " + data.message);
+            // alert("The server says " + data.message);
+            console.log(data.message)
+            let childEl = document.createElement('li')
+            childEl.textContent = data.message
+            list.appendChild(childEl)
         }, false);
         source.addEventListener('error', function (event) {
             alert("Failed to connect to event stream. Is Redis running?");
