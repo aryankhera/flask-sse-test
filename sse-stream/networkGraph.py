@@ -20,9 +20,36 @@ class NetworkGraph:
             for comment in author.submissions.new(limit=LIMIT):
                 subreddit_name=comment.subreddit.display_name
                 if subreddit_name not in self.users_most_active_subreddits and subreddit_name.lower() != start_subreddit.lower() and subreddit_name not in self.subreddits:
-                    print(subreddit_name)
-                    yield subreddit_name
+                    print(f"{start_subreddit} -> {subreddit_name}")
+                    yield f"{start_subreddit} -> {subreddit_name}"
                 self.users_most_active_subreddits.add(subreddit_name)
-            self.subreddits.union(self.users_most_active_subreddits)
+            self.subreddits=self.subreddits.union(self.users_most_active_subreddits)
             self.users_most_active_subreddits.clear()
         yield 'finished'
+
+    @classmethod
+    def get_next_subrredit_node(cls,self,start,level,visited_subreddit):
+        print(f'{start} {level}')
+        if level!=LIMIT:
+            subreddits=set()
+            most_active_sr=set()
+            top10redditors=[submission.author for submission in self.reddit.subreddit(start).hot(limit=LIMIT)]
+            for author in top10redditors:
+                try:
+                    if author is not None:
+                        for comment in author.submissions.new(limit=LIMIT):
+                            subreddit_name=comment.subreddit.display_name
+                            if subreddit_name.lower() != start.lower():
+                                print(f"{start} -> {subreddit_name}")
+                                yield f"{start} -> {subreddit_name}"
+                            most_active_sr.add(subreddit_name)
+                        subreddits=subreddits.union(most_active_sr)
+                        most_active_sr.clear()
+                        visited_subreddit.add(start)
+                except:
+                    continue
+            for sr in subreddits:
+                if sr not in visited_subreddit:
+                    yield from NetworkGraph.get_next_subrredit_node(NetworkGraph(),sr,level+1,visited_subreddit)
+            
+
